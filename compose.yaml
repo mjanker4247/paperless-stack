@@ -120,21 +120,21 @@ services:
   
 
   # paperless-gpt service
-  # paperless-gpt:
-  #   image: icereed/paperless-gpt:latest
-  #   container_name: paperless-gpt
-  #   restart: unless-stopped
-  #   depends_on:
-  #     # - ollama
-  #     - paperless
-  #   ports:
-  #     - "3002:8080"
-  #   networks: 
-  #     - paperless-backend
-  #   env_file:
-  #     - ./paperless-gpt/.env
-  #   volumes:
-  #     - ./paperless-gpt/prompts:/app/prompts # Mount the prompts directory
+  paperless-gpt:
+    image: icereed/paperless-gpt:latest
+    container_name: paperless-gpt
+    restart: unless-stopped
+    depends_on:
+      # - ollama
+      - paperless
+    ports:
+      - "3002:8080"
+    networks: 
+      - paperless-backend
+    env_file:
+      - ./paperless-gpt/.env
+    volumes:
+      - ./paperless-gpt/prompts:/app/prompts # Mount the prompts directory
 
 
   # optional but helpful log viewer
