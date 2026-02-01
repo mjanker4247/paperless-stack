@@ -60,36 +60,36 @@ services:
   
 
     # open-webui service for LLM interaction
-  open-webui:
-    image: ghcr.io/open-webui/open-webui:latest
-    container_name: open-webui-paperless
-    restart: unless-stopped
-    env_file:
-      - ./open-webui/.env
-    depends_on:
-      - ollama
-    ports:
-      - "3001:8080"
-    volumes:
-      - ./open-webui/data:/app/backend/data
+  # open-webui:
+  #   image: ghcr.io/open-webui/open-webui:latest
+  #   container_name: open-webui-paperless
+  #   restart: unless-stopped
+  #   env_file:
+  #     - ./open-webui/.env
+  #   depends_on:
+  #     - ollama
+  #   ports:
+  #     - "3001:8080"
+  #   volumes:
+  #     - ./open-webui/data:/app/backend/data
 
   # ollama service for local LLMs
-  ollama:
-    image: ollama/ollama:latest
-    container_name: ollama-paperless
-    env_file:
-      - ./ollama/.env
-    volumes:
-      - ./ollama/data/:/root/.ollama
-      - ./ollama/models:/ollama-models
-    restart: unless-stopped
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: ollama-paperless
+  #   env_file:
+  #     - ./ollama/.env
+  #   volumes:
+  #     - ./ollama/data/:/root/.ollama
+  #     - ./ollama/models:/ollama-models
+  #   restart: unless-stopped
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: all
+  #             capabilities: [gpu]
 
   # paperless-ai service
   paperless-ai:
@@ -97,7 +97,7 @@ services:
     container_name: paperless-ai
     restart: unless-stopped
     depends_on:
-      - ollama
+      # - ollama
       - paperless
     ports:
       - "3000:3000"
@@ -113,7 +113,7 @@ services:
     container_name: paperless-gpt
     restart: unless-stopped
     depends_on:
-      - ollama
+      # - ollama
       - paperless
     ports:
       - "3002:8080"
