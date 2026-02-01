@@ -23,7 +23,7 @@ services:
   postgres:
     image: postgres:18
     restart: unless-stopped
-    container_name: postgres
+    container_name: postgres-paperless
     env_file: 
       - ./postgres/.env
     volumes:
@@ -32,7 +32,7 @@ services:
   # redis database for paperless-ngx
   redis:
     image: docker.io/library/redis:8
-    container_name: redis
+    container_name: redis-paperless
     restart: unless-stopped
     env_file: 
       - ./redis/.env
@@ -42,7 +42,7 @@ services:
   # gotenberg service that paperless uses for document conversion
   gotenberg:
     image: docker.io/gotenberg/gotenberg:8.25
-    container_name: gotenberg
+    container_name: gotenberg-paperless
     env_file: 
       - ./gotenberg/.env
     restart: unless-stopped
@@ -54,7 +54,7 @@ services:
   # tika service that paperless uses for document text extraction
   tika:
     image: docker.io/apache/tika:latest
-    container_name: tika
+    container_name: tika-paperless
     restart: unless-stopped
     env_file: ./tika/.env
   
@@ -62,7 +62,7 @@ services:
     # open-webui service for LLM interaction
   open-webui:
     image: ghcr.io/open-webui/open-webui:latest
-    container_name: open-webui
+    container_name: open-webui-paperless
     restart: unless-stopped
     env_file:
       - ./open-webui/.env
@@ -76,7 +76,7 @@ services:
   # ollama service for local LLMs
   ollama:
     image: ollama/ollama:latest
-    container_name: ollama
+    container_name: ollama-paperless
     env_file:
       - ./ollama/.env
     volumes:
@@ -127,7 +127,7 @@ services:
   dozzle:
     image: amir20/dozzle:latest
     restart: unless-stopped
-    container_name: dozzle
+    container_name: dozzle-paperless
     env_file: 
       - ./dozzle/.env
     volumes:
