@@ -1,0 +1,8 @@
+data/
+prompts/
+chromadb/
+consume/
+export/
+media/
+models/
+paperless-gpt/.env

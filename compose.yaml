@@ -13,6 +13,8 @@ services:
       - tika
     ports:
       - "8000:8000"
+    networks: 
+      - paperless-backend
     volumes:
       - ./paperless/data:/usr/src/paperless/data
       - ./paperless/media:/usr/src/paperless/media
@@ -24,6 +26,8 @@ services:
     image: postgres:18
     restart: unless-stopped
     container_name: postgres-paperless
+    networks: 
+      - paperless-backend
     env_file: 
       - ./postgres/.env
     volumes:
@@ -33,6 +37,8 @@ services:
   redis:
     image: docker.io/library/redis:8
     container_name: redis-paperless
+    networks: 
+      - paperless-backend
     restart: unless-stopped
     env_file: 
       - ./redis/.env
@@ -43,6 +49,8 @@ services:
   gotenberg:
     image: docker.io/gotenberg/gotenberg:8.25
     container_name: gotenberg-paperless
+    networks: 
+      - paperless-backend
     env_file: 
       - ./gotenberg/.env
     restart: unless-stopped
@@ -55,6 +63,8 @@ services:
   tika:
     image: docker.io/apache/tika:latest
     container_name: tika-paperless
+    networks: 
+      - paperless-backend
     restart: unless-stopped
     env_file: ./tika/.env
   
@@ -101,6 +111,8 @@ services:
       - paperless
     ports:
       - "3000:3000"
+    networks: 
+      - paperless-backend
     env_file:
       - ./paperless-ai/.env
     volumes:
@@ -117,6 +129,8 @@ services:
       - paperless
     ports:
       - "3002:8080"
+    networks: 
+      - paperless-backend
     env_file:
       - ./paperless-gpt/.env
     volumes:
@@ -135,3 +149,10 @@ services:
       - ./dozzle/data:/data
     ports:
       - "8080:8080"
+
+
+networks:
+  proxy:
+    external: true
+  paperless-backend:
+    name: paperless-backend
