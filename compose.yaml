@@ -156,3 +156,4 @@ networks:
     external: true
   paperless-backend:
     name: paperless-backend
+    external: true
