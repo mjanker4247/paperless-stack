@@ -4,35 +4,70 @@ services:
     image: ghcr.io/paperless-ngx/paperless-ngx:latest
     container_name: paperless-ngx
     restart: unless-stopped
-    env_file: 
+    env_file:
       - ./paperless/.env
     depends_on:
-      - postgres
-      - redis
-      - gotenberg
-      - tika
-    ports:
-      - "8000:8000"
-    networks: 
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      gotenberg:
+        condition: service_started
+      tika:
+        condition: service_started
+    # ports:
+    #  - "8000:8000"
+    networks:
+      - proxy
       - paperless-backend
     volumes:
       - ./paperless/data:/usr/src/paperless/data
       - ./paperless/media:/usr/src/paperless/media
-      - ./paperless/export:/usr/src/paperless/export
+#      - ./paperless/export:/usr/src/paperless/export
+      - /mnt/ds118_backups/paperless:/usr/src/paperless/export
       - ./paperless/consume:/usr/src/paperless/consume
-  
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+
+      # HTTPS Router (mittlere Priorität: 10)
+      - "traefik.http.routers.paperless-secure.entrypoints=websecure"
+      - "traefik.http.routers.paperless-secure.rule=Host(`paperless.ululuu.de`)"
+      - "traefik.http.routers.paperless-secure.tls=true"
+      - "traefik.http.routers.paperless-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.paperless-secure.service=paperless-svc"
+      - "traefik.http.routers.paperless-secure.middlewares=default-security-headers@file,gzip@file,chain-oauth@file"
+
+      # HTTP Router (Redirect zu HTTPS, niedrige Priorität: 1)
+      # Keep HTTP available for cloudflared tunnel ingress
+      # Do NOT enable global HTTPS redirection here (causes loops)
+      - "traefik.http.routers.paperless.entrypoints=web"
+      - "traefik.http.routers.paperless.rule=Host(`paperless.ululuu.de`)"
+      - "traefik.http.routers.paperless.service=paperless-svc"
+      # - "traefik.http.routers.paperless.middlewares=redirect-to-https@file"
+
+      # Service (unverändert)
+      - "traefik.http.services.paperless-svc.loadbalancer.server.port=8000"
+
   # postgres database for paperless-ngx
   postgres:
     image: postgres:18
     restart: unless-stopped
     container_name: postgres-paperless
-    networks: 
+    networks:
       - paperless-backend
-    env_file: 
+    env_file:
       - ./postgres/.env
     volumes:
       - ./postgres/data:/var/lib/postgresql
-  
+    healthcheck:
+      # Use $$ to prevent Docker Compose from trying to interpolate these values
+      test: ['CMD-SHELL', 'pg_isready -h localhost -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
   # redis database for paperless-ngx
   redis:
     image: docker.io/library/redis:8
@@ -69,7 +104,42 @@ services:
     env_file: ./tika/.env
   
 
-    # open-webui service for LLM interaction
+  # paperless-ai service
+  paperless-ai:
+    image: clusterzx/paperless-ai:latest
+    container_name: paperless-ai
+    restart: unless-stopped
+    depends_on:
+      # - ollama
+      - paperless
+    ports:
+      - "3000:3000"
+    networks: 
+      - paperless-backend
+    env_file:
+      - ./paperless-ai/.env
+    volumes:
+      - ./paperless-ai/data:/app/data
+  
+
+  # paperless-gpt service
+#  paperless-gpt:
+#    image: icereed/paperless-gpt:latest
+#    container_name: paperless-gpt
+#    restart: unless-stopped
+#    depends_on:
+      # - ollama
+#      - paperless
+#    ports:
+#      - "3002:8080"
+#    networks: 
+#      - paperless-backend
+#    env_file:
+#      - ./paperless-gpt/.env
+#    volumes:
+#      - ./paperless-gpt/prompts:/app/prompts # Mount the prompts directory
+
+  # open-webui service for LLM interaction
   # open-webui:
   #   image: ghcr.io/open-webui/open-webui:latest
   #   container_name: open-webui-paperless
@@ -100,55 +170,6 @@ services:
   #           - driver: nvidia
   #             count: all
   #             capabilities: [gpu]
-
-  # paperless-ai service
-  paperless-ai:
-    image: clusterzx/paperless-ai:latest
-    container_name: paperless-ai
-    restart: unless-stopped
-    depends_on:
-      # - ollama
-      - paperless
-    ports:
-      - "3000:3000"
-    networks: 
-      - paperless-backend
-    env_file:
-      - ./paperless-ai/.env
-    volumes:
-      - ./paperless-ai/data:/app/data
-  
-
-  # paperless-gpt service
-  paperless-gpt:
-    image: icereed/paperless-gpt:latest
-    container_name: paperless-gpt
-    restart: unless-stopped
-    depends_on:
-      # - ollama
-      - paperless
-    ports:
-      - "3002:8080"
-    networks: 
-      - paperless-backend
-    env_file:
-      - ./paperless-gpt/.env
-    volumes:
-      - ./paperless-gpt/prompts:/app/prompts # Mount the prompts directory
-
-
-  # optional but helpful log viewer
-  dozzle:
-    image: amir20/dozzle:latest
-    restart: unless-stopped
-    container_name: dozzle-paperless
-    env_file: 
-      - ./dozzle/.env
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./dozzle/data:/data
-    ports:
-      - "8080:8080"
 
 
 networks:
