@@ -13,10 +13,12 @@ Docker Compose stack for running Paperless-ngx with optional local AI capabiliti
 
 2. **Edit environment files**
 
-   Update passwords and secrets in each service's `.env` file:
+   Copy each `*.env.example` to `.env` (files are gitignored) and set secrets locally:
    - `./paperless/.env` - Paperless configuration
    - `./postgres/.env` - Database credentials (must match Paperless config)
    - Other service `.env` files as needed
+
+   Never commit `.env` files. `paperless-ai` and `paperless-gpt` have **no host ports** — they are reachable only on the internal `paperless-backend` network.
 
 3. **Start the stack**
 
