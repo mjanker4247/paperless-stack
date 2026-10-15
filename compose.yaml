@@ -104,7 +104,7 @@ services:
     env_file: ./tika/.env
   
 
-  # paperless-ai service
+  # paperless-ai service (internal only — no host ports; use paperless-backend)
   paperless-ai:
     image: clusterzx/paperless-ai:latest
     container_name: paperless-ai
@@ -112,8 +112,6 @@ services:
     depends_on:
       # - ollama
       - paperless
-    ports:
-      - "3000:3000"
     networks: 
       - paperless-backend
     env_file:
@@ -122,7 +120,7 @@ services:
       - ./paperless-ai/data:/app/data
   
 
-  # paperless-gpt service
+  # paperless-gpt service (internal only — no host ports; use paperless-backend)
   paperless-gpt:
     image: icereed/paperless-gpt:latest
     container_name: paperless-gpt
@@ -130,8 +128,6 @@ services:
     depends_on:
       # - ollama
       - paperless
-    ports:
-      - "3002:8080"
     networks: 
       - paperless-backend
     env_file:
