@@ -109,3 +109,7 @@ This stack is built using these awesome open-source projects:
 - **[Dozzle](https://github.com/amir20/dozzle)** - Real-time log viewer for Docker
 
 Special thanks to the maintainers and contributors of these projects for making self-hosted document management and local AI accessible.
+
+## Floating image tags
+
+This stack may use floating tags (e.g. `:latest`). That is **intentional** here: Watchtower is monitor-only and will not auto-recreate. Pin or bump tags deliberately when you want an upgrade; record the running digest/tag after changes.
